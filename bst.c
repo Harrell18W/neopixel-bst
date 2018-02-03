@@ -11,7 +11,7 @@ void insert(Node **root, int datum);
 void delete(Node **root, int datum);
 Node *leftMost(Node *root);
 void clear(Node **root);
-void print(Node *root);
+void print(Node *root, int color);
 
 int main(void) {
     Node *r = NULL;
@@ -20,7 +20,7 @@ int main(void) {
     insert(&r, 3);
     insert(&r, 6);
     delete(&r, 5);
-    print(r);
+    print(r, 31);
     clear(&r);
     return 0;
 }
@@ -86,17 +86,18 @@ void clear(Node **root) {
     *root = NULL;
 }
 
-void print(Node *root) {
+void print(Node *root, int color) {
+    //red: 31   green: 32   blue: 34
     static int depth = 0;
     if(!root)
         return;
     depth++;
-    print(root->right);
+    print(root->right, color);
     depth--;
     for(int x = 0; x < depth; x++)
         printf("  ");
-    printf("%d\n", root->datum);
+    printf("\x1b[%dm%d\x1b[0m\n", color, root->datum);
     depth++;
-    print(root->left);
+    print(root->left, color);
     depth--;
 }
