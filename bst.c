@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct node {
     int datum;
+    char pos[5];
     struct node *left;
     struct node *right;
 } Node;
@@ -10,6 +12,7 @@ typedef struct node {
 void insert(Node **root, int datum);
 void delete(Node **root, int datum);
 Node *leftMost(Node *root);
+void setPos(Node *root, char *step);
 void clear(Node **root);
 void print(Node *root, int color);
 
@@ -19,7 +22,11 @@ int main(void) {
     insert(&r, 4);
     insert(&r, 3);
     insert(&r, 6);
-    delete(&r, 5);
+    insert(&r, 79);
+    insert(&r, 99);
+    insert(&r, 16);
+    insert(&r, 100);
+    setPos(r, "\0");
     print(r, 31);
     clear(&r);
     return 0;
@@ -30,6 +37,7 @@ void insert(Node **root, int datum) {
     if(!tree) {
         *root = malloc(sizeof(Node));
         tree = *root;
+        tree->pos[0] = '\0';
         tree->left = NULL;
         tree->right = NULL;
         tree->datum = datum;
@@ -76,6 +84,24 @@ Node *leftMost(Node *root) {
     return leftMost(root->left);
 }
 
+void setPos(Node *root, char *step) {
+    if(!root)
+        return;
+    size_t x;
+    strcpy(root->pos, step);
+    char l[5], r[5];
+    for(x = 0; step[x] != '\0'; x++)
+        l[x] = step[x];
+    l[x] = 'l';
+    l[x + 1] = '\0';
+    for(x = 0; step[x] != '\0'; x++)
+        r[x] = step[x];
+    r[x] = 'r';
+    r[x + 1] = '\0';
+    setPos(root->left, l);
+    setPos(root->right, r);
+}
+
 void clear(Node **root) {
     Node *node = *root;
     if(!node)
@@ -96,7 +122,7 @@ void print(Node *root, int color) {
     depth--;
     for(int x = 0; x < depth; x++)
         printf("  ");
-    printf("\x1b[%dm%d\x1b[0m\n", color, root->datum);
+    printf("\x1b[%dm%d:%s\x1b[0m\n", color, root->datum, root->pos);
     depth++;
     print(root->left, color);
     depth--;
