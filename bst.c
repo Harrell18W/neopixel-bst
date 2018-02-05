@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_DEPTH 4
+
 typedef struct node {
     int datum;
     char pos[5];
@@ -33,7 +35,12 @@ int main(void) {
 }
 
 void insert(Node **root, int datum) {
+    static int depth = 0;
     Node *tree = *root;
+    if(depth > MAX_DEPTH) {
+        printf("%d could not be inserted because doing so would make the tree greater than the maximum possible depth\n", datum);
+        return;
+    }
     if(!tree) {
         *root = malloc(sizeof(Node));
         tree = *root;
@@ -44,10 +51,14 @@ void insert(Node **root, int datum) {
         return;
     }
     if(tree->datum > datum) {
+        depth++;
         insert(&(tree->left), datum);
+        depth--;
         return;
     } else {
+        depth++;
         insert(&(tree->right), datum);
+        depth--;
     }
 }
 
