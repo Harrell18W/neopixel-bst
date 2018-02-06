@@ -55,7 +55,7 @@ void insert(Node **root, int datum) {
     static int depth = 0;
     Node *tree = *root;
     if(depth > MAX_DEPTH) {
-        printf("%d could not be inserted because doing so would make the tree greater than the maximum possible depth\n", datum);
+        printf("%d could not be inserted because doing so would make the tree greater than the maximum possible depth\n\n", datum);
         return;
     }
     if(!tree) {
@@ -175,7 +175,7 @@ void writeNode(FILE *fptr, Node *node) {
 
 void editTree(Node **root, enum Color color) {
     int command = -1;
-    puts("What would you like to do?\nInsert node: 0\nDelete node: 1\nPrint tree:  2\nClear tree:  3");
+    puts("\nWhat would you like to do?\nInsert node: 0\nDelete node: 1\nPrint tree:  2\nClear tree:  3");
     scanf("%d", &command);
     int brightness;
     char filename[6];
@@ -187,29 +187,36 @@ void editTree(Node **root, enum Color color) {
         strcpy(filename, "b.txt");
     switch(command) {
         case 0:
-            printf("Please insert a number between %d and %d\n", MIN_BRIGTHNESS, MAX_BRIGTHNESS);
+            printf("\nPlease insert a number between %d and %d\n", MIN_BRIGTHNESS, MAX_BRIGTHNESS);
             scanf("%d", &brightness);
             if(brightness < MIN_BRIGTHNESS || brightness > MAX_BRIGTHNESS)
-                puts("Please input a valid brightness");
+                puts("Please input a valid brightness\n");
             else {
                 insert(root, brightness);
                 setPos(*root, "\0");
                 writeTree(filename, *root);
+                puts("");
             }
             break;
         case 1:
-            puts("Please input your datum to remove");
+            puts("\nPlease input your datum to remove");
             scanf("%d", &brightness);
             delete(root, brightness);
             setPos(*root, "\0");
             writeTree(filename, *root);
+            puts("");
             break;
         case 2:
             print(*root, color);
+            puts("");
             break;
         case 3:
             clear(root);
             writeTree(filename, *root);
+            puts("");
+            break;
+        default:
+            puts("Invalid command\n");
             break;
     }
 }
