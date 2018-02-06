@@ -3,6 +3,8 @@
 #include <string.h>
 
 #define MAX_DEPTH 4
+#define MIN_BRIGTHNESS 0
+#define MAX_BRIGTHNESS 100
 
 typedef struct node {
     int datum;
@@ -11,29 +13,41 @@ typedef struct node {
     struct node *right;
 } Node;
 
+enum Color {RED = 31, GREEN = 32, BLUE = 34};
+
 void insert(Node **root, int datum);
 void delete(Node **root, int datum);
 Node *leftMost(Node *root);
 void setPos(Node *root, char *step);
 void clear(Node **root);
-void print(Node *root, int color);
+void print(Node *root, enum Color color);
 void writeTree(char *filename, Node *root);
 void writeNode(FILE *fptr, Node *node);
+void editTree(Node **root, enum Color color);
 
 int main(void) {
     Node *r = NULL;
-    insert(&r, 5);
-    insert(&r, 4);
-    insert(&r, 3);
-    insert(&r, 6);
-    insert(&r, 79);
-    insert(&r, 99);
-    insert(&r, 16);
-    insert(&r, 100);
-    setPos(r, "\0");
-    print(r, 31);
-    writeTree("r.txt", r);
-    clear(&r);
+    Node *g = NULL;
+    Node *b = NULL;
+    int command = -1;
+    while(1) {
+        puts("Select a tree\nr:0\ng:1\nb:2");
+        scanf("%d", &command);
+        switch(command) {
+            case 0:
+                editTree(&r, RED);
+                break;
+            case 1:
+                editTree(&g, GREEN);
+                break;
+            case 2:
+                editTree(&b, BLUE);
+                break;
+            default:
+                puts("Invalid command");
+                break;
+        }
+    }
     return 0;
 }
 
@@ -126,7 +140,7 @@ void clear(Node **root) {
     *root = NULL;
 }
 
-void print(Node *root, int color) {
+void print(Node *root, enum Color color) {
     //red: 31   green: 32   blue: 34
     static int depth = 0;
     if(!root)
@@ -157,4 +171,45 @@ void writeNode(FILE *fptr, Node *node) {
         fprintf(fptr, "%s %d\n", node->pos, node->datum);
     writeNode(fptr, node->left);
     writeNode(fptr, node->right);
+}
+
+void editTree(Node **root, enum Color color) {
+    int command = -1;
+    puts("What would you like to do?\nInsert node: 0\nDelete node: 1\nPrint tree:  2\nClear tree:  3");
+    scanf("%d", &command);
+    int brightness;
+    char filename[6];
+    if(color == RED)
+        strcpy(filename, "r.txt");
+    else if(color == GREEN)
+        strcpy(filename, "g.txt");
+    else
+        strcpy(filename, "b.txt");
+    switch(command) {
+        case 0:
+            printf("Please insert a number between %d and %d\n", MIN_BRIGTHNESS, MAX_BRIGTHNESS);
+            scanf("%d", &brightness);
+            if(brightness < MIN_BRIGTHNESS || brightness > MAX_BRIGTHNESS)
+                puts("Please input a valid brightness");
+            else {
+                insert(root, brightness);
+                setPos(*root, "\0");
+                writeTree(filename, *root);
+            }
+            break;
+        case 1:
+            puts("Please input your datum to remove");
+            scanf("%d", &brightness);
+            delete(root, brightness);
+            setPos(*root, "\0");
+            writeTree(filename, *root);
+            break;
+        case 2:
+            print(*root, color);
+            break;
+        case 3:
+            clear(root);
+            writeTree(filename, *root);
+            break;
+    }
 }
