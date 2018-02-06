@@ -6,7 +6,7 @@
 
 typedef struct node {
     int datum;
-    char pos[5];
+    char pos[MAX_DEPTH + 1];
     struct node *left;
     struct node *right;
 } Node;
@@ -17,6 +17,8 @@ Node *leftMost(Node *root);
 void setPos(Node *root, char *step);
 void clear(Node **root);
 void print(Node *root, int color);
+void writeTree(char *filename, Node *root);
+void writeNode(FILE *fptr, Node *node);
 
 int main(void) {
     Node *r = NULL;
@@ -30,6 +32,7 @@ int main(void) {
     insert(&r, 100);
     setPos(r, "\0");
     print(r, 31);
+    writeTree("r.txt", r);
     clear(&r);
     return 0;
 }
@@ -137,4 +140,21 @@ void print(Node *root, int color) {
     depth++;
     print(root->left, color);
     depth--;
+}
+
+void writeTree(char *filename, Node *root) {
+    FILE *fptr = fopen(filename, "w");
+    writeNode(fptr, root);
+    fclose(fptr);
+}
+
+void writeNode(FILE *fptr, Node *node) {
+    if(!node)
+        return;
+    if(node->pos[0] == '\0')
+        fprintf(fptr, "root %d\n", node->datum);
+    else
+        fprintf(fptr, "%s %d\n", node->pos, node->datum);
+    writeNode(fptr, node->left);
+    writeNode(fptr, node->right);
 }
