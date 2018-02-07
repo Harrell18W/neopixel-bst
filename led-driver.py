@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import time
 from neopixel import *
 
 # LED strip configuration
@@ -48,34 +49,53 @@ def main():
     # create NeoPixel strip
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT)
     strip.begin()
-    strip.setPixelColor(0, 1, 2 , 3)
-    test(strip, "r")
+    while(True):
+        checkForUpdates(strip)
+        time.sleep(0.1)
 
 def clearTree(strip, channel):
     for led in range(LED_COUNT):
         strip.setPixelColor(led, 0, 0, 0)
     strip.show()
 
-def checkForUpdates():
-    if os.path.exists("./r.txt"):
-        changeTree("./r.txt")
-    elif os.path.exists("./g.txt")
-        changeTree("./g.txt")
-    elif os.path.exists("./b.txt")
-        changeTree("./b.txt")
+def hexToRGB(hexa):
+    rgb = []
+    rgb.append(int(hexa[0:2], 16))
+    rgb.append(int(hexa[2:4], 16))
+    rgb.append(int(hexa[4:6], 16))
+    return rgb
 
-def changeTree(path):
+def changeChannel(strip, position, channel, brightness):
+    print("position: %d channel: %d brightness: %d" %(position, channel, brightness))
+    color = strip.getPixelColor(position)
+    color = hexToRGB(format(color, "06x"))
+    color[channel] = brightness
+    strip.setPixelColorRGB(position, color[0], color[1], color[2])
+
+def checkForUpdates(strip):
+    if os.path.exists("./r.txt"):
+        changeTree(strip, "./r.txt")
+    elif os.path.exists("./g.txt"):
+        changeTree(strip, "./g.txt")
+    elif os.path.exists("./b.txt"):
+        changeTree(strip, "./b.txt")
+
+def changeTree(strip, path):
     if path == "./r.txt":
-        pos = 0
-    elif path == "./g.txt":
         pos = 1
+    elif path == "./g.txt":
+        pos = 0
     else:
         pos = 2
     f = open(path, "r")
     tree = f.readlines()
+    f.close()
+    os.remove(path)
     for line in tree:
+        print(line.split()[0])
+        print(line.split()[1])
+        changeChannel(strip, positions[line.split()[0]], pos, int(line.split()[1]))
+    strip.show()
 
-def test(strip, channel):
-    for led in range(LED_COUNT):
-        color = strip.getPixelColor(0)[0]
-        print(color)
+if __name__ == "__main__":
+    main()
