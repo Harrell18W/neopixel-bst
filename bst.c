@@ -4,7 +4,7 @@
 
 #define MAX_DEPTH 4
 #define MIN_BRIGTHNESS 0
-#define MAX_BRIGTHNESS 100
+#define MAX_BRIGTHNESS 255
 
 typedef struct node {
     int datum;
