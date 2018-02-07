@@ -55,7 +55,7 @@ def main():
 
 def clearTree(strip, channel):
     for led in range(LED_COUNT):
-        strip.setPixelColor(led, 0, 0, 0)
+        changeChannel(strip, led, channel, 0)
     strip.show()
 
 def hexToRGB(hexa):
@@ -66,7 +66,7 @@ def hexToRGB(hexa):
     return rgb
 
 def changeChannel(strip, position, channel, brightness):
-    print("position: %d channel: %d brightness: %d" %(position, channel, brightness))
+    #print("position: %d channel: %d brightness: %d" %(position, channel, brightness))
     color = strip.getPixelColor(position)
     color = hexToRGB(format(color, "06x"))
     color[channel] = brightness
@@ -91,9 +91,12 @@ def changeTree(strip, path):
     tree = f.readlines()
     f.close()
     os.remove(path)
+    clearTree(strip, pos)
+    if tree[0].split()[0] == "clear":
+        return
     for line in tree:
-        print(line.split()[0])
-        print(line.split()[1])
+        #print(line.split()[0])
+        #print(line.split()[1])
         changeChannel(strip, positions[line.split()[0]], pos, int(line.split()[1]))
     strip.show()
 

@@ -158,6 +158,11 @@ void print(Node *root, enum Color color) {
 
 void writeTree(char *filename, Node *root) {
     FILE *fptr = fopen(filename, "w");
+	if(!root) {
+		fputs("clear", fptr);
+		fclose(fptr);
+		return;
+	}
     writeNode(fptr, root);
     fclose(fptr);
 }
