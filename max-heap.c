@@ -28,21 +28,6 @@ int main(void) {
     Heap *r = create();
     Heap *g = create();
     Heap *b = create();
-    push(r, 5);
-    push(r, 10);
-    push(r, 24);
-    push(r, 834);
-    push(r, 182);
-    push(r, 1812);
-    push(r, 181);
-    push(r, 184);
-    push(r, 182);
-    push(r, 18);
-    push(r, 199);
-    push(r, 3);
-    print(r);
-    writeTree("r.txt", r);
-    destroy(r);
 }
 
 void destroy(Heap *heap) {
@@ -135,6 +120,10 @@ void print(Heap *heap) {
 
 void push(Heap *heap, unsigned int datum) {
     resizeIfFull(heap);
+    if(heap->size == 31) {
+        puts("Max heap size reached");
+        return;
+    }
     heap->data[heap->size++] = datum;
     for(size_t ci = heap->size - 1, pi = (ci - 1)/2;
         ci > 0 && heap->data[pi] < heap->data[ci];
