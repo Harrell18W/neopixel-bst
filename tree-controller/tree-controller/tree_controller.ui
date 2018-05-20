@@ -1,24 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>tree_controller</class>
- <widget class="QMainWindow" name="tree_controller" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="tree_controller">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>822</width>
+    <height>410</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>tree_controller</string>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>788</width>
+      <height>338</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="controls">
+       <item>
+        <layout class="QVBoxLayout" name="type">
+         <item>
+          <widget class="QLabel" name="typeLabel">
+           <property name="text">
+            <string>Tree Type</string>
+           </property>
+          </widget>
+         </item>
+         <item alignment="Qt::AlignHCenter">
+          <widget class="QListWidget" name="typeListWidget">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>151</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="currentTypeLabel">
+           <property name="text">
+            <string>Current Type: </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="typePushButton">
+           <property name="text">
+            <string>Switch Type</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="operation">
+         <item>
+          <widget class="QLabel" name="operationLabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>18</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Operation</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListWidget" name="operationListWidget">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>151</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="operationTextBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>22</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="operationPushButton">
+           <property name="text">
+            <string>Execute</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="color">
+         <item>
+          <widget class="QLabel" name="colorLabel">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>151</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Color</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListWidget" name="colorListWidget">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>151</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="currentColorLabel">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>151</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Current Color: </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="colorPushButton">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>151</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Switch Color</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>100</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>822</width>
+     <height>19</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
 </ui>

@@ -7,22 +7,16 @@
 #define MAX_DEPTH 4
 
 //heap parameters
-#define MIN 0
-#define MAX 1
 #define CAPACITY 31
 
 //data structure types
-#define AVL 0
-#define BST 1
-#define HEAP 2
+enum Type {AVL, BST, HEAP};
 
 //operations
-#define INSERT 0
-#define DELETE 1
-#define GET 2
-#define CREATE 3
-#define CLEAR 4
-#define SWITCH 5
+enum Operation {INSERT, DELETE, CLEAR, SWITCH};
+
+//heap types
+enum HeapType {MIN, MAX};
 
 typedef struct bstNode {
     int datum;
@@ -89,14 +83,14 @@ void heapPrint(Heap *heap);
 void heapWriteTree(char *filename, Heap *heap);
 void heapWriteNode(FILE *fptr, Heap *heap, size_t index, char *pos, unsigned int size);
 
-void handle(unsigned int type, unsigned int heapType, unsigned int operation, enum Color color, unsigned int datum);
+void handle(enum Color color, enum Operation operation, unsigned int datum, enum Type type, enum HeapType heapType);
 
 int main(void) {
 
     return 0;
 }
 
-void handle(unsigned int type, unsigned int heapType, unsigned int operation, enum Color color, unsigned int datum) {
+void handle(enum Color color, enum Operation operation, unsigned int datum, enum Type type, enum HeapType heapType) {
     //INSERT, DELETE, CLEAR, SWITCH
     static AvlNode *avlR = NULL;
     static AvlNode *avlG = NULL;
@@ -112,25 +106,27 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
 
     static int currType = -1;
     
+    int tmp;
+    
     switch(operation) {
         case INSERT:
             switch(currType) {
                 case AVL:
                     switch(color) {
                         case RED:
-                            avlInsert(avlR, datum);
+                            avlInsert(&avlR, datum);
                             avlSetPos(avlR, "\0");
                             avlWriteTree("r.txt", avlR);
                             break;
                         
                         case GREEN:
-                            avlInsert(avlG, datum);
+                            avlInsert(&avlG, datum);
                             avlSetPos(avlG, "\0");
                             avlWriteTree("g.txt", avlG);
                             break;
 
                         case BLUE:
-                            avlInsert(avlB, datum);
+                            avlInsert(&avlB, datum);
                             avlSetPos(avlB, "\0");
                             avlWriteTree("b.txt", avlB);
                             break;
@@ -143,19 +139,19 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 case BST:
                     switch(color) {
                         case RED:
-                            bstInsert(bstR, datum);
+                            bstInsert(&bstR, datum);
                             bstSetPos(bstR, "\0");
                             bstWriteTree("r.txt", bstR);
                             break;
                         
                         case GREEN:
-                            bstInsert(bstG, datum);
+                            bstInsert(&bstG, datum);
                             bstSetPos(bstG, "\0");
                             bstWriteTree("g.txt", bstG);
                             break;
 
                         case BLUE:
-                            bstInsert(bstB, datum);
+                            bstInsert(&bstB, datum);
                             bstSetPos(bstB, "\0");
                             bstWriteTree("b.txt", bstB);
                             break;
@@ -169,19 +165,16 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                     switch(color) {
                         case RED:
                             push(heapR, datum);
-                            heapSetPos(heapR, "\0");
                             heapWriteTree("r.txt", heapR);
                             break;
                         
                         case GREEN:
                             push(heapG, datum);
-                            heapSetPos(heapG, "\0");
                             heapWriteTree("g.txt", heapG);
                             break;
 
                         case BLUE:
                             push(heapB, datum);
-                            heapSetPos(heapB, "\0");
                             heapWriteTree("b.txt", heapB);
                             break;
                         
@@ -200,19 +193,19 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 case AVL:
                     switch(color) {
                         case RED:
-                            avlDelete(avlR, datum);
+                            avlDelete(&avlR, datum);
                             avlSetPos(avlR, "\0");
                             avlWriteTree("r.txt", avlR);
                             break;
 
                         case GREEN:
-                            avlDelete(avlG, datum);
+                            avlDelete(&avlG, datum);
                             avlSetPos(avlG, "\0");
                             avlWriteTree("g.txt", avlG);
                             break;
 
                         case BLUE:
-                            avlDelete(avlB, datum);
+                            avlDelete(&avlB, datum);
                             avlSetPos(avlB, "\0");
                             avlWriteTree("b.txt", avlB);
                             break;
@@ -225,19 +218,19 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 case BST:
                     switch(color) {
                         case RED:
-                            bstDelete(bstR, datum);
+                            bstDelete(&bstR, datum);
                             bstSetPos(bstR, "\0");
                             bstWriteTree("r.txt", bstR);
                             break;
 
                         case GREEN:
-                            bstDelete(bstG, datum);
+                            bstDelete(&bstG, datum);
                             bstSetPos(bstG, "\0");
                             bstWriteTree("g.txt", bstG);
                             break;
 
                         case BLUE:
-                            bstDelete(bstB, datum);
+                            bstDelete(&bstB, datum);
                             bstSetPos(bstB, "\0");
                             bstWriteTree("b.txt", bstB);
                             break;
@@ -251,19 +244,16 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                     switch(color) {
                         case RED:
                             pop(heapR);
-                            heapSetPos(heapR, "\0");
                             heapWriteTree("r.txt", heapR);
                             break;
 
                         case GREEN:
                             pop(heapG);
-                            heapSetPos(heapG, "\0");
                             heapWriteTree("g.txt", heapG);
                             break;
 
                         case BLUE:
                             pop(heapB);
-                            heapSetPos(heapB, "\0");
                             heapWriteTree("b.txt", heapB);
                             break;
 
@@ -282,17 +272,17 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 case AVL:
                     switch(color) {
                         case RED:
-                            avlClear(avlR);
+                            avlClear(&avlR);
                             avlWriteTree("r.txt", avlR);
                             break;
 
                         case GREEN:
-                            avlClear(avlG);
+                            avlClear(&avlG);
                             avlWriteTree("g.txt", avlG);
                             break;
 
                         case BLUE:
-                            avlClear(avlB);
+                            avlClear(&avlB);
                             avlWriteTree("b.txt", avlB);
                             break;
 
@@ -304,17 +294,17 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 case BST:
                     switch(color) {
                         case RED:
-                            bstClear(bstR);
+                            bstClear(&bstR);
                             bstWriteTree("r.txt", bstR);
                             break;
 
                         case GREEN:
-                            bstClear(bstG);
+                            bstClear(&bstG);
                             bstWriteTree("g.txt", bstG);
                             break;
 
                         case BLUE:
-                            bstClear(bstB);
+                            bstClear(&bstB);
                             bstWriteTree("b.txt", bstB);
                             break;
 
@@ -326,22 +316,22 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 case HEAP:
                     switch(color) {
                         case RED:
-                            int tmp = heapR->type;
-                            destroy(heapR);
+                            tmp = heapR->type;
+                            destroy(&heapR);
                             heapR = create(tmp);
                             heapWriteTree("r.txt", heapR);
                             break;
 
                         case GREEN:
-                            int tmp = heapG->type;
-                            destroy(heapG);
+                            tmp = heapG->type;
+                            destroy(&heapG);
                             heapG = create(tmp);
                             heapWriteTree("g.txt", heapG);
                             break;
 
                         case BLUE:
-                            int tmp = heapB->type;
-                            destroy(heapB);
+                            tmp = heapB->type;
+                            destroy(&heapB);
                             heapB = create(tmp);
                             heapWriteTree("b.txt", heapB);
                             break;
@@ -354,14 +344,15 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 default:
                     puts("Invalid value stored in currType");
             }
+            break;
 
         case SWITCH:
             switch(currType) {
                 case AVL:
                     if(type != AVL) {
-                        avlClear(avlR);
-                        avlClear(avlG);
-                        avlClear(avlB);
+                        avlClear(&avlR);
+                        avlClear(&avlG);
+                        avlClear(&avlB);
                         switch(type) {
                             case BST:
                                 currType = BST;
@@ -386,9 +377,9 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
 
                 case BST:
                     if(currType != BST) {
-                        bstClear(bstR);
-                        bstClear(bstG);
-                        bstClear(bstB);
+                        bstClear(&bstR);
+                        bstClear(&bstG);
+                        bstClear(&bstB);
                         bstWriteTree("r.txt", bstR);
                         bstWriteTree("g.txt", bstR);
                         bstWriteTree("b.txt", bstR);
@@ -416,9 +407,9 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
 
                 case HEAP:
                     if(currType != HEAP) {
-                        destroy(heapR);
-                        destroy(heapG);
-                        destroy(heapB);
+                        destroy(&heapR);
+                        destroy(&heapG);
+                        destroy(&heapB);
                         heapWriteTree("r.txt", heapR);
                         heapWriteTree("g.txt", heapR);
                         heapWriteTree("b.txt", heapR);
@@ -444,6 +435,7 @@ void handle(unsigned int type, unsigned int heapType, unsigned int operation, en
                 default:
                     puts("Invalid value stored in currType");
             }
+            break;
 
         default:
             puts("Invalid command passed to handle");
@@ -967,12 +959,14 @@ void heapWriteTree(char *filename, Heap *heap) {
     }
     fprintf(fptr, "root %d\n", heap->data[0]);
     char *pos = malloc(sizeof(char) * 2);
-    if(heap->size >= 1)
+    if(heap->size >= 1) {
         strcpy(pos, "l\0");
         heapWriteNode(fptr, heap, 1, pos, 2);
-    if(heap->size >= 2)
+    }
+    if(heap->size >= 2) {
         strcpy(pos, "r\0");
         heapWriteNode(fptr, heap, 2, pos, 2);
+    }
     free(pos);
     fclose(fptr);
 }

@@ -145,12 +145,14 @@ void writeTree(char *filename, Heap *heap) {
     }
     fprintf(fptr, "root %d\n", heap->data[0]);
     char *pos = malloc(sizeof(char) * 2);
-    if(heap->size >= 1)
+    if(heap->size >= 1) {
         strcpy(pos, "l\0");
         writeNode(fptr, heap, 1, pos, 2);
-    if(heap->size >= 2)
+    }
+    if(heap->size >= 2) {
         strcpy(pos, "r\0");
         writeNode(fptr, heap, 2, pos, 2);
+    }
     free(pos);
     fclose(fptr);
 }
