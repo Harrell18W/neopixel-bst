@@ -18,7 +18,7 @@ void sift(Heap *heap, size_t index);
 Heap *merge(Heap *heap1, Heap *heap2);
 Heap *initialize(unsigned int *array, size_t index);
 Heap *create();
-void destroy(Heap *heap);
+void destroy(Heap **heapPtr);
 void resizeIfFull(Heap *heap);
 void print(Heap *heap);
 void writeTree(char *filename, Heap *heap);
@@ -30,13 +30,15 @@ int main(void) {
     Heap *b = create();
 }
 
-void destroy(Heap *heap) {
+void destroy(Heap **heapPtr) {
+    Heap *heap = *heapPtr;
     free(heap->data);
     heap->data = calloc(heap->capacity, sizeof(unsigned int));
     heap->size = 0;
     heap->capacity = 0;
     free(heap->data);
     free(heap);
+    *heapPtr = NULL;
 }
 
 Heap *create() {
@@ -136,7 +138,7 @@ void push(Heap *heap, unsigned int datum) {
 
 void writeTree(char *filename, Heap *heap) {
     FILE *fptr = fopen(filename, "w");
-    if(heap->size == 0) {
+    if(!heap || heap->size == 0) {
         fputs("clear", fptr);
         fclose(fptr);
         return;
