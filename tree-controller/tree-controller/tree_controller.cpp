@@ -82,7 +82,7 @@ void heapPrint(Heap *heap);
 void heapWriteTree(char *filename, Heap *heap);
 void heapWriteNode(FILE *fptr, Heap *heap, size_t index, char *pos, unsigned int size);
 
-void handle(enum Operation operation, enum Color color = RED, unsigned int datum = 0, enum Type type = AVL, enum HeapType heapType = MAX);
+void handle(enum Operation operation, enum Color color = RED, unsigned int datum = 0, enum Type type = AVL);
 
 tree_controller::tree_controller(QWidget *parent) :
     QMainWindow(parent),
@@ -133,9 +133,56 @@ enum Color tree_controller::getCurrentColor() {
     if(!strcmp(color, "Current Color: Red"))
         return RED;
     else if(!strcmp(color, "Current Color: Green"))
-            return GREEN;
+        return GREEN;
     else
         return BLUE;
+}
+
+enum Color tree_controller::getSelectedColor() {
+    char *color = qstringToCharPtr(ui->colorListWidget->currentItem()->text());
+
+    if(!strcmp(color, "Red"))
+        return RED;
+    else if(!strcmp(color, "Green"))
+        return GREEN;
+    else
+        return BLUE;
+}
+
+char *tree_controller::colorToString(enum Color color) {
+    std::ostringstream string;
+    switch(color) {
+        case RED:
+            string << "Red";
+            break;
+
+        case GREEN:
+            string << "Green";
+            break;
+
+        case BLUE:
+            string << "Blue";
+            break;
+
+        default:
+            string << "error";
+    }
+    return (char *)string.str().c_str();
+}
+
+void tree_controller::setCurrentColor(enum Color color) {
+    switch(color) {
+        case RED:
+            ui->currentColorLabel->setText("Current Color: Red");
+            break;
+
+        case GREEN:
+            ui->currentColorLabel->setText("Current Color: Green");
+            break;
+
+        default:
+            ui->currentColorLabel->setText("Current Color: Blue");
+    }
 }
 
 enum Type tree_controller::getCurrentType() {
@@ -218,21 +265,13 @@ void tree_controller::on_typePushButton_clicked()
 
     std::ostringstream string;
 
-    enum Type currType = getCurrentType();
-    if(switchType == currType || (currType == HEAP && (switchType == MAX_HEAP || switchType == MIN_HEAP))) {
-        printf("switchType: %d, currType: %d\n", switchType, currType);
+    if(switchType == getCurrentType()) {
         string << "The active data structure is already set to " << typeToString(switchType);
         addLog((char *)string.str().c_str());
         return;
     }
 
-    enum HeapType heapType;
-    if(switchType == MAX_HEAP)
-        heapType = MAX;
-    else
-        heapType = MIN;
-
-    handle(SWITCH, getCurrentColor(), 0, switchType, heapType);
+    handle(SWITCH, getCurrentColor(), 0, switchType);
 
     setCurrentType(switchType);
 
@@ -241,7 +280,70 @@ void tree_controller::on_typePushButton_clicked()
     addLog((char *)string.str().c_str());
 }
 
-void handle(enum Operation operation, enum Color color, unsigned int datum, enum Type type, enum HeapType heapType) {
+enum Operation tree_controller::getSelectedOperation() {
+    char *operation = qstringToCharPtr(ui->operationListWidget->currentItem()->text());
+
+    if(!strcmp(operation, "Add Value"))
+        return INSERT;
+    else if(!strcmp(operation, "Delete Value"))
+        return DELETE;
+    else
+        return CLEAR;
+}
+
+int tree_controller::getValue() {
+    char *value = qstringToCharPtr(ui->operationTextBox->toPlainText());
+
+    for(size_t i = 0; value[i] != '\0'; i++) {
+        if(value[i] < '0' || value[i] > '9')
+            return -1;
+    }
+
+    return atoi(value);
+}
+
+void tree_controller::on_operationPushButton_clicked()
+{
+    int value = getValue();
+
+    if(value < 0) {
+        addLog((char *)"Bad input in value box");
+        return;
+    }
+    if(value < MIN_BRIGHTNESS || value > MAX_BRIGHTNESS) {
+        addLog((char *)"Please enter a value between 0 and 255");
+        return;
+    }
+
+    enum Operation operation = getSelectedOperation();
+    handle(operation, getCurrentColor(), value);
+
+    std::ostringstream string;
+    if(operation == INSERT)
+        string << "The value " << value << " was added to the " << typeToString(getCurrentType());
+    else if(operation == DELETE)
+        string << "The value " << value << " was removed from the " << typeToString(getCurrentType());
+    else
+        string << "The " << typeToString(getCurrentType()) << " was cleared";
+    addLog((char *)string.str().c_str());
+}
+
+void tree_controller::on_colorPushButton_clicked()
+{
+    enum Color currColor = getCurrentColor();
+    enum Color selectedColor = getSelectedColor();
+
+    std::ostringstream string;
+    if(currColor != selectedColor) {
+        setCurrentColor(selectedColor);
+        string << "The current color was changed to " << colorToString(selectedColor);
+    } else {
+        string << "The current color is already set to " << colorToString(selectedColor);
+    }
+    addLog((char *)string.str().c_str());
+}
+
+void handle(enum Operation operation, enum Color color, unsigned int datum, enum Type type) {
     //INSERT, DELETE, CLEAR, SWITCH
     static AvlNode *avlR = NULL;
     static AvlNode *avlG = NULL;
@@ -255,341 +357,201 @@ void handle(enum Operation operation, enum Color color, unsigned int datum, enum
     static Heap *heapG = NULL;
     static Heap *heapB = NULL;
 
-    static enum Type currType = BST;
+    static enum Type currType = AVL;
 
-    int tmp;
-
-    switch(operation) {
-        case INSERT:
-            switch(currType) {
-                case AVL:
-                    switch(color) {
-                        case RED:
-                            avlInsert(&avlR, datum);
-                            avlSetPos(avlR, (char *)"\0");
-                            avlWriteTree((char *)"r.txt", avlR);
-                            break;
-
-                        case GREEN:
-                            avlInsert(&avlG, datum);
-                            avlSetPos(avlG, (char *)"\0");
-                            avlWriteTree((char *)"g.txt", avlG);
-                            break;
-
-                        case BLUE:
-                            avlInsert(&avlB, datum);
-                            avlSetPos(avlB, (char *)"\0");
-                            avlWriteTree((char *)"b.txt", avlB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                case BST:
-                    switch(color) {
-                        case RED:
-                            bstInsert(&bstR, datum);
-                            bstSetPos(bstR, (char *)"\0");
-                            bstWriteTree((char *)"r.txt", bstR);
-                            break;
-
-                        case GREEN:
-                            bstInsert(&bstG, datum);
-                            bstSetPos(bstG, (char *)"\0");
-                            bstWriteTree((char *)"g.txt", bstG);
-                            break;
-
-                        case BLUE:
-                            bstInsert(&bstB, datum);
-                            bstSetPos(bstB, (char *)"\0");
-                            bstWriteTree((char *)"b.txt", bstB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                case HEAP:
-                    switch(color) {
-                        case RED:
-                            push(heapR, datum);
-                            heapWriteTree((char *)"r.txt", heapR);
-                            break;
-
-                        case GREEN:
-                            push(heapG, datum);
-                            heapWriteTree((char *)"g.txt", heapG);
-                            break;
-
-                        case BLUE:
-                            push(heapB, datum);
-                            heapWriteTree((char *)"b.txt", heapB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                    default:
-                        puts("Invalid value stored in currType");
+    if(operation == INSERT) {
+        if(currType == AVL) {
+            if(color == RED) {
+                avlInsert(&avlR, datum);
+                avlSetPos(avlR, (char *)"\0");
+                avlWriteTree((char *)"r.txt", avlR);
+                return;
+            } else if(color == GREEN) {
+                avlInsert(&avlG, datum);
+                avlSetPos(avlG, (char *)"\0");
+                avlWriteTree((char *)"g.txt", avlG);
+                return;
+            } else {
+                avlInsert(&avlB, datum);
+                avlSetPos(avlB, (char *)"\0");
+                avlWriteTree((char *)"b.txt", avlB);
+                return;
             }
-            break;
-
-        case DELETE:
-            switch(currType) {
-                case AVL:
-                    switch(color) {
-                        case RED:
-                            avlDelete(&avlR, datum);
-                            avlSetPos(avlR, (char *)"\0");
-                            avlWriteTree((char *)"r.txt", avlR);
-                            break;
-
-                        case GREEN:
-                            avlDelete(&avlG, datum);
-                            avlSetPos(avlG, (char *)"\0");
-                            avlWriteTree((char *)"g.txt", avlG);
-                            break;
-
-                        case BLUE:
-                            avlDelete(&avlB, datum);
-                            avlSetPos(avlB, (char *)"\0");
-                            avlWriteTree((char *)"b.txt", avlB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                case BST:
-                    switch(color) {
-                        case RED:
-                            bstDelete(&bstR, datum);
-                            bstSetPos(bstR, (char *)"\0");
-                            bstWriteTree((char *)"r.txt", bstR);
-                            break;
-
-                        case GREEN:
-                            bstDelete(&bstG, datum);
-                            bstSetPos(bstG, (char *)"\0");
-                            bstWriteTree((char *)"g.txt", bstG);
-                            break;
-
-                        case BLUE:
-                            bstDelete(&bstB, datum);
-                            bstSetPos(bstB, (char *)"\0");
-                            bstWriteTree((char *)"b.txt", bstB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                case HEAP:
-                    switch(color) {
-                        case RED:
-                            pop(heapR);
-                            heapWriteTree((char *)"r.txt", heapR);
-                            break;
-
-                        case GREEN:
-                            pop(heapG);
-                            heapWriteTree((char *)"g.txt", heapG);
-                            break;
-
-                        case BLUE:
-                            pop(heapB);
-                            heapWriteTree((char *)"b.txt", heapB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                default:
-                    puts("Invalid value stored in curr type");
+        } else if(currType == BST) {
+            if(color == RED) {
+                bstInsert(&bstR, datum);
+                bstSetPos(bstR, (char *)"\0");
+                bstWriteTree((char *)"r.txt", bstR);
+                return;
+            } else if(color == GREEN) {
+                bstInsert(&bstG, datum);
+                bstSetPos(bstG, (char *)"\0");
+                bstWriteTree((char *)"g.txt", bstG);
+                return;
+            } else {
+                bstInsert(&bstB, datum);
+                bstSetPos(bstB, (char *)"\0");
+                bstWriteTree((char *)"b.txt", bstB);
+                return;
             }
-            break;
-
-        case CLEAR:
-            switch(currType) {
-                case AVL:
-                    switch(color) {
-                        case RED:
-                            avlClear(&avlR);
-                            avlWriteTree((char *)"r.txt", avlR);
-                            break;
-
-                        case GREEN:
-                            avlClear(&avlG);
-                            avlWriteTree((char *)"g.txt", avlG);
-                            break;
-
-                        case BLUE:
-                            avlClear(&avlB);
-                            avlWriteTree((char *)"b.txt", avlB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                case BST:
-                    switch(color) {
-                        case RED:
-                            bstClear(&bstR);
-                            bstWriteTree((char *)"r.txt", bstR);
-                            break;
-
-                        case GREEN:
-                            bstClear(&bstG);
-                            bstWriteTree((char *)"g.txt", bstG);
-                            break;
-
-                        case BLUE:
-                            bstClear(&bstB);
-                            bstWriteTree((char *)"b.txt", bstB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                case HEAP:
-                    switch(color) {
-                        case RED:
-                            tmp = heapR->type;
-                            destroy(&heapR);
-                            heapR = create(tmp);
-                            heapWriteTree((char *)"r.txt", heapR);
-                            break;
-
-                        case GREEN:
-                            tmp = heapG->type;
-                            destroy(&heapG);
-                            heapG = create(tmp);
-                            heapWriteTree((char *)"g.txt", heapG);
-                            break;
-
-                        case BLUE:
-                            tmp = heapB->type;
-                            destroy(&heapB);
-                            heapB = create(tmp);
-                            heapWriteTree((char *)"b.txt", heapB);
-                            break;
-
-                        default:
-                            puts("Invalid color used in call to handle");
-                    }
-                    break;
-
-                default:
-                    puts("Invalid value stored in currType");
+        } else {
+            if(color == RED) {
+                push(heapR, datum);
+                heapWriteTree((char *)"r.txt", heapR);
+                return;
+            } else if(color == GREEN) {
+                push(heapG, datum);
+                heapWriteTree((char *)"g.txt", heapG);
+                return;
+            } else {
+                push(heapB, datum);
+                heapWriteTree((char *)"b.txt", heapB);
+                return;
             }
-            break;
-
-        case SWITCH:
-            switch(currType) {
-                case AVL:
-                    if(type != AVL) {
-                        avlClear(&avlR);
-                        avlClear(&avlG);
-                        avlClear(&avlB);
-                        switch(type) {
-                            case BST:
-                                currType = BST;
-                                break;
-
-                            case HEAP:
-                                heapR = create(heapType);
-                                heapG = create(heapType);
-                                heapB = create(heapType);
-                                currType = HEAP;
-                                break;
-
-                            default:
-                                puts("Invalid type used in call to handle");
-                        }
-                        break;
-                    } else {
-                        puts("handle is already using AVL");
-                        return;
-                    }
-                    break;
-
-                case BST:
-                    if(currType != BST) {
-                        bstClear(&bstR);
-                        bstClear(&bstG);
-                        bstClear(&bstB);
-                        bstWriteTree((char *)"r.txt", bstR);
-                        bstWriteTree((char *)"g.txt", bstR);
-                        bstWriteTree((char *)"b.txt", bstR);
-                        switch(type) {
-                            case AVL:
-                                currType = AVL;
-                                break;
-
-                            case HEAP:
-                                heapR = create(heapType);
-                                heapG = create(heapType);
-                                heapB = create(heapType);
-                                currType = HEAP;
-                                break;
-
-                            default:
-                                puts("Invalid type used in call to handle");
-                        }
-                        break;
-                    } else {
-                        puts("handle is already using BST");
-                        return;
-                    }
-                    break;
-
-                case HEAP:
-                    if(currType != HEAP) {
-                        destroy(&heapR);
-                        destroy(&heapG);
-                        destroy(&heapB);
-                        heapWriteTree((char *)"r.txt", heapR);
-                        heapWriteTree((char *)"g.txt", heapR);
-                        heapWriteTree((char *)"b.txt", heapR);
-                        switch(type) {
-                            case AVL:
-                                currType = AVL;
-                                break;
-
-                            case BST:
-                                currType = BST;
-                                break;
-
-                            default:
-                                puts("Invalid type used in call to handle");
-                        }
-                        break;
-                    } else {
-                        puts("handle is already using HEAP");
-                        return;
-                    }
-                    break;
-
-                default:
-                    puts("Invalid value stored in currType");
+        }
+    } else if(operation == DELETE) {
+        if(currType == AVL) {
+            if(color == RED) {
+                avlDelete(&avlR, datum);
+                avlSetPos(avlR, (char *)"\0");
+                avlWriteTree((char *)"r.txt", avlR);
+                return;
+            } else if(color == GREEN) {
+                avlDelete(&avlG, datum);
+                avlSetPos(avlG, (char *)"\0");
+                avlWriteTree((char *)"g.txt", avlG);
+                return;
+            } else {
+                avlDelete(&avlB, datum);
+                avlSetPos(avlB, (char *)"\0");
+                avlWriteTree((char *)"b.txt", avlB);
             }
-            break;
-
-        default:
-            puts("Invalid command passed to handle");
+        } else if(currType == BST) {
+            if(color == RED) {
+                bstDelete(&bstR, datum);
+                bstSetPos(bstR, (char *)"\0");
+                bstWriteTree((char *)"r.txt", bstR);
+                return;
+            } else if(color == GREEN) {
+                bstDelete(&bstG, datum);
+                bstSetPos(bstG, (char *)"\0");
+                bstWriteTree((char *)"g.txt", bstG);
+                return;
+            } else {
+                bstDelete(&bstB, datum);
+                bstSetPos(bstB, (char *)"\0");
+                bstWriteTree((char *)"b.txt", bstB);
+            }
+        } else {
+            if(color == RED) {
+                pop(heapR);
+                heapWriteTree((char *)"r.txt", heapR);
+                return;
+            } else if(color == GREEN) {
+                pop(heapG);
+                heapWriteTree((char *)"g.txt", heapG);
+                return;
+            } else {
+                pop(heapB);
+                heapWriteTree((char *)"b.txt", heapB);
+                return;
+            }
+        }
+    } else if(operation == CLEAR) {
+        if(currType == AVL) {
+            if(color == RED) {
+                avlClear(&avlR);
+                avlWriteTree((char *)"r.txt", avlR);
+                return;
+            } else if(color == GREEN) {
+                avlClear(&avlG);
+                avlWriteTree((char *)"g.txt", avlG);
+                return;
+            } else {
+                avlClear(&avlB);
+                avlWriteTree((char *)"b.txt", avlB);
+                return;
+            }
+        } else if(currType == BST) {
+            if(color == RED) {
+                bstClear(&bstR);
+                bstWriteTree((char *)"r.txt", bstR);
+                return;
+            } else if(color == GREEN) {
+                bstClear(&bstG);
+                bstWriteTree((char *)"g.txt", bstG);
+                return;
+            } else {
+                bstClear(&bstB);
+                bstWriteTree((char *)"b.txt", bstB);
+                return;
+            }
+        } else {
+            if(color == RED) {
+                destroy(&heapR);
+                heapWriteTree((char *)"r.txt", heapR);
+                return;
+            } else if(color == GREEN) {
+                destroy(&heapG);
+                heapWriteTree((char *)"g.txt", heapG);
+                return;
+            } else {
+                destroy(&heapB);
+                heapWriteTree((char *)"b.txt", heapB);
+                return;
+            }
+        }
+    } else {
+        if(currType == AVL) {
+            if(type != AVL) {
+                avlClear(&avlR);
+                avlClear(&avlG);
+                avlClear(&avlB);
+                avlWriteTree((char *)"r.txt", avlR);
+                avlWriteTree((char *)"g.txt", avlR);
+                avlWriteTree((char *)"b.txt", avlR);
+                currType = type;
+                if(currType == MAX_HEAP || currType == MIN_HEAP) {
+                    heapR = create(currType);
+                    heapG = create(currType);
+                    heapB = create(currType);
+                }
+            }
+        } else if(currType == BST) {
+            if(type != BST) {
+                bstClear(&bstR);
+                bstClear(&bstG);
+                bstClear(&bstB);
+                bstWriteTree((char *)"r.txt", bstR);
+                bstWriteTree((char *)"g.txt", bstR);
+                bstWriteTree((char *)"b.txt", bstR);
+                currType = type;
+                if(currType == MAX_HEAP || currType == MIN_HEAP) {
+                    heapR = create(currType);
+                    heapG = create(currType);
+                    heapB = create(currType);
+                }
+            }
+        } else {
+            if(type != currType) {
+                destroy(&heapR);
+                destroy(&heapG);
+                destroy(&heapB);
+                heapWriteTree((char *)"r.txt", heapR);
+                heapWriteTree((char *)"g.txt", heapR);
+                heapWriteTree((char *)"b.txt", heapR);
+                currType = type;
+                if(currType == MAX_HEAP) {
+                    heapR = create(MAX_HEAP);
+                    heapG = create(MAX_HEAP);
+                    heapB = create(MAX_HEAP);
+                } else if(currType == MIN_HEAP) {
+                    heapR = create(MIN_HEAP);
+                    heapG = create(MIN_HEAP);
+                    heapB = create(MIN_HEAP);
+                }
+            }
+        }
     }
 }
 
@@ -1008,7 +970,7 @@ void push(Heap *heap, unsigned int datum) {
         return;
     }
     heap->data[heap->size++] = datum;
-    if(heap->type == MAX) {
+    if(heap->type == MAX_HEAP) {
         for(size_t ci = heap->size - 1, pi = (ci - 1)/2;
             ci > 0 && heap->data[pi] < heap->data[ci];
             ci = pi, pi = (ci-1)/2) {
@@ -1043,7 +1005,7 @@ void sift(Heap *heap, size_t index) {
     unsigned int tmp;
     for(size_t i = max; i*2+1 < heap->size; i = max) {
         //max = i;
-        if(heap->type == MAX) {
+        if(heap->type == MAX_HEAP) {
             if(heap->data[max] < heap->data[i*2+1])
                 max = i*2+1;
             if(i*2+2 < heap->size && heap->data[max] < heap->data[i*2+2])
@@ -1074,6 +1036,8 @@ Heap *create(unsigned int type) {
 }
 
 void destroy(Heap **heapPtr) {
+    if(*heapPtr == NULL)
+        return;
     Heap *heap = *heapPtr;
     free(heap->data);
     heap->data = (unsigned int *)calloc(heap->capacity, sizeof(unsigned int));
