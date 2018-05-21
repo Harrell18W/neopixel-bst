@@ -170,7 +170,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget">
+      <widget class="QListWidget" name="logListWidget">
        <property name="maximumSize">
         <size>
          <width>16777215</width>

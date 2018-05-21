@@ -7,20 +7,17 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <sstream>
+
+//led parameters
+#define MAX_BRIGHTNESS 255
+#define MIN_BRIGHTNESS 0
+
 //avl and bst parameters
 #define MAX_DEPTH 4
 
 //heap parameters
 #define CAPACITY 31
-
-//data structure types
-enum Type {AVL, BST, HEAP};
-
-//operations
-enum Operation {INSERT, DELETE, CLEAR, SWITCH};
-
-//heap types
-enum HeapType {MIN, MAX};
 
 typedef struct bstNode {
     int datum;
@@ -45,8 +42,6 @@ typedef struct heap {
     size_t size;
     unsigned int *data;
 } Heap;
-
-enum Color {RED = 31, GREEN = 32, BLUE = 34};
 
 //bst functions
 void bstInsert(BstNode **root, int datum);
@@ -87,7 +82,7 @@ void heapPrint(Heap *heap);
 void heapWriteTree(char *filename, Heap *heap);
 void heapWriteNode(FILE *fptr, Heap *heap, size_t index, char *pos, unsigned int size);
 
-void handle(enum Color color, enum Operation operation, unsigned int datum = 0, enum Type type = AVL, enum HeapType heapType = MAX);
+void handle(enum Operation operation, enum Color color = RED, unsigned int datum = 0, enum Type type = AVL, enum HeapType heapType = MAX);
 
 tree_controller::tree_controller(QWidget *parent) :
     QMainWindow(parent),
@@ -97,7 +92,7 @@ tree_controller::tree_controller(QWidget *parent) :
 
     //setup tree types
     ui->typeListWidget->addItem("AVL Tree");
-    ui->typeListWidget->addItem("BST Tree");
+    ui->typeListWidget->addItem("Binary Search Tree");
     ui->typeListWidget->addItem("Max Heap");
     ui->typeListWidget->addItem("Min Heap");
 
@@ -111,7 +106,10 @@ tree_controller::tree_controller(QWidget *parent) :
     ui->colorListWidget->addItem("Green");
     ui->colorListWidget->addItem("Blue");
 
-    pow(2,4);
+    ui->currentColorLabel->setText("Current Color: Red");
+    ui->currentTypeLabel->setText("Current Type: AVL Tree");
+
+    addLog((char *)"Actions will be logged here.");
 
 }
 
@@ -120,7 +118,130 @@ tree_controller::~tree_controller()
     delete ui;
 }
 
-void handle(enum Color color, enum Operation operation, unsigned int datum, enum Type type, enum HeapType heapType) {
+void tree_controller::addLog(char *msg) {
+    ui->logListWidget->addItem(msg);
+    ui->logListWidget->scrollToBottom();
+}
+
+char *tree_controller::qstringToCharPtr(QString qstring) {
+    return qstring.toLatin1().data();
+}
+
+enum Color tree_controller::getCurrentColor() {
+    char *color = qstringToCharPtr(ui->currentColorLabel->text());
+
+    if(!strcmp(color, "Current Color: Red"))
+        return RED;
+    else if(!strcmp(color, "Current Color: Green"))
+            return GREEN;
+    else
+        return BLUE;
+}
+
+enum Type tree_controller::getCurrentType() {
+    char *type = qstringToCharPtr(ui->currentTypeLabel->text());
+
+    if(!strcmp(type, "Current Type: AVL Tree"))
+        return AVL;
+    else if(!strcmp(type, "Current Type: BST"))
+        return BST;
+    else if(!strcmp(type, "Current Type: Min Heap"))
+        return MIN_HEAP;
+    else
+        return MAX_HEAP;
+}
+
+void tree_controller::setCurrentType(enum Type type) {
+    switch(type) {
+        case AVL:
+            ui->currentTypeLabel->setText("Current Type: AVL Tree");
+            break;
+
+        case BST:
+            ui->currentTypeLabel->setText("Current Type: BST");
+            break;
+
+        case MAX_HEAP:
+            ui->currentTypeLabel->setText("Current Type: Max Heap");
+            break;
+
+        case MIN_HEAP:
+            ui->currentTypeLabel->setText("Current Type: Min Heap");
+            break;
+
+        default:
+            ui->currentTypeLabel->setText("Error in setCurrentType");
+    }
+}
+
+enum Type tree_controller::getSelectedType() {
+    char *type = qstringToCharPtr(ui->typeListWidget->currentItem()->text());
+
+    if(!strcmp(type, "AVL Tree"))
+        return AVL;
+    else if(!strcmp(type, "Binary Search Tree"))
+        return BST;
+    else if(!strcmp(type, "Max Heap"))
+        return MAX_HEAP;
+    else
+        return MIN_HEAP;
+}
+
+char *tree_controller::typeToString(enum Type type) {
+    std::ostringstream string;
+    switch(type) {
+        case AVL:
+            string << "AVL Tree";
+            break;
+
+        case BST:
+            string << "BST";
+            break;
+
+        case MAX_HEAP:
+            string << "Max Heap";
+            break;
+
+        case MIN_HEAP:
+            string << "Min Heap";
+            break;
+
+        default:
+            string << "error";
+    }
+    return (char *)string.str().c_str();
+}
+
+void tree_controller::on_typePushButton_clicked()
+{
+    enum Type switchType = getSelectedType();
+
+    std::ostringstream string;
+
+    enum Type currType = getCurrentType();
+    if(switchType == currType || (currType == HEAP && (switchType == MAX_HEAP || switchType == MIN_HEAP))) {
+        printf("switchType: %d, currType: %d\n", switchType, currType);
+        string << "The active data structure is already set to " << typeToString(switchType);
+        addLog((char *)string.str().c_str());
+        return;
+    }
+
+    enum HeapType heapType;
+    if(switchType == MAX_HEAP)
+        heapType = MAX;
+    else
+        heapType = MIN;
+
+    handle(SWITCH, getCurrentColor(), 0, switchType, heapType);
+
+    setCurrentType(switchType);
+
+    string << "The active data structure was changed to " << typeToString(switchType);
+
+    addLog((char *)string.str().c_str());
+}
+
+void handle(enum Operation operation, enum Color color, unsigned int datum, enum Type type, enum HeapType heapType) {
     //INSERT, DELETE, CLEAR, SWITCH
     static AvlNode *avlR = NULL;
     static AvlNode *avlG = NULL;
@@ -134,7 +255,7 @@ void handle(enum Color color, enum Operation operation, unsigned int datum, enum
     static Heap *heapG = NULL;
     static Heap *heapB = NULL;
 
-    static int currType = -1;
+    static enum Type currType = BST;
 
     int tmp;
 
